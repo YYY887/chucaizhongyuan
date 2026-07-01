@@ -27,7 +27,6 @@ backend/logs/
 backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
-backend/app.db
 backend/travel_routes.db
 backend/uploads/
 
