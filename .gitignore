@@ -20,8 +20,6 @@ backend/.env
 # Build outputs
 frontend/dist/
 admin/dist/
-backend/static/
-backend/admin_static/
 
 # Runtime data
 backend/logs/

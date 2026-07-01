@@ -1,0 +1,1 @@
+import{i as e}from"./index-C6rAqp0S.js";function t(){return e({url:`/config/banners`,method:`get`})}function n(){return e({url:`/config/site`,method:`get`})}function r(){return e({url:`/config/about`,method:`get`})}function i(){return e({url:`/visits/summary`,method:`get`})}export{i,t as n,n as r,r as t};
