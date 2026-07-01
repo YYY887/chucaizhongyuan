@@ -10,6 +10,7 @@ __pycache__/
 *.py[cod]
 .venv/
 backend/.venv/
+backend/.git.backup/
 
 # Env
 .env
