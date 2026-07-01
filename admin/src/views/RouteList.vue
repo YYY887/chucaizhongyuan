@@ -48,6 +48,7 @@
           </div>
           <div class="toolbar">
             <el-button plain @click="openRoutePreview">预览地图</el-button>
+            <el-button plain :disabled="routePoints.length < 3" @click="autoSortRoutePoints">一键排序</el-button>
             <el-button plain @click="openRouteDialog">编辑路线</el-button>
             <el-button type="primary" :loading="savingOrder" @click="saveOrder">保存顺序</el-button>
           </div>
@@ -72,9 +73,9 @@
             <div class="table-tip">拖动右侧手柄可以直接调整节点顺序，节点信息可在本页直接编辑。</div>
             <el-table ref="tableRef" :data="routePoints" row-key="id" style="width: 100%">
               <el-table-column label="排序" width="90">
-                <template #default="{ row }">
+                <template #default="{ $index }">
                   <div class="sort-cell">
-                    <span>{{ row.order }}</span>
+                    <span>{{ $index + 1 }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -325,6 +326,16 @@ function handleRouteChange(routeId) {
   }
 }
 
+function syncVisibleSortNumbers(tbody) {
+  const rows = tbody?.querySelectorAll('tr') || []
+  rows.forEach((row, index) => {
+    const sortText = row.querySelector('.sort-cell span')
+    if (sortText) {
+      sortText.textContent = String(index + 1)
+    }
+  })
+}
+
 function normalizePointOrder(items) {
   items.forEach((item, index) => {
     item.order = index + 1
@@ -349,6 +360,66 @@ function formatCoordinate(value) {
   return Number(value).toFixed(6)
 }
 
+function getPointDistance(a, b) {
+  const lat1 = Number(a.latitude)
+  const lng1 = Number(a.longitude)
+  const lat2 = Number(b.latitude)
+  const lng2 = Number(b.longitude)
+
+  if ([lat1, lng1, lat2, lng2].some((value) => Number.isNaN(value))) {
+    return Number.POSITIVE_INFINITY
+  }
+
+  const latDiff = lat1 - lat2
+  const lngDiff = lng1 - lng2
+  return (latDiff * latDiff) + (lngDiff * lngDiff)
+}
+
+function autoSortRoutePoints() {
+  if (routePoints.value.length < 3) {
+    return
+  }
+
+  const source = routePoints.value.map((item) => ({ ...item }))
+  const startIndex = source.reduce((bestIndex, item, index) => {
+    const best = source[bestIndex]
+    if (Number(item.longitude) < Number(best.longitude)) {
+      return index
+    }
+    if (Number(item.longitude) === Number(best.longitude) && Number(item.latitude) > Number(best.latitude)) {
+      return index
+    }
+    return bestIndex
+  }, 0)
+
+  const ordered = [source[startIndex]]
+  const remaining = source.filter((_, index) => index !== startIndex)
+
+  while (remaining.length) {
+    const current = ordered[ordered.length - 1]
+    let nextIndex = 0
+    let minDistance = Number.POSITIVE_INFINITY
+
+    remaining.forEach((item, index) => {
+      const distance = getPointDistance(current, item)
+      if (distance < minDistance) {
+        minDistance = distance
+        nextIndex = index
+      }
+    })
+
+    ordered.push(remaining.splice(nextIndex, 1)[0])
+  }
+
+  normalizePointOrder(ordered)
+  routePoints.value = ordered
+  nextTick(() => {
+    const tbody = tableRef.value?.$el?.querySelector('.el-table__body-wrapper tbody')
+    syncVisibleSortNumbers(tbody)
+  })
+  ElMessage.success('已按经纬度生成建议顺序，请确认后保存')
+}
+
 function initSortable() {
   const tbody = tableRef.value?.$el?.querySelector('.el-table__body-wrapper tbody')
   if (!tbody) {
@@ -361,11 +432,15 @@ function initSortable() {
     ghostClass: 'route-sort-ghost',
     chosenClass: 'route-sort-chosen',
     dragClass: 'route-sort-drag',
-    onChange: ({ oldIndex, newIndex }) => {
-      movePointOrder(oldIndex, newIndex)
+    onStart: () => {
+      syncVisibleSortNumbers(tbody)
+    },
+    onChange: () => {
+      syncVisibleSortNumbers(tbody)
     },
     onEnd: ({ oldIndex, newIndex }) => {
       movePointOrder(oldIndex, newIndex)
+      nextTick(() => syncVisibleSortNumbers(tbody))
     }
   })
 }
@@ -599,6 +674,14 @@ onBeforeUnmount(() => {
   font-size: 13px;
 }
 
+:deep(.point-table-wrap .el-table td) {
+  padding: 10px 0;
+}
+
+:deep(.point-table-wrap .el-table .cell) {
+  line-height: 1.45;
+}
+
 :deep(.el-dialog .map-box) {
   height: 460px;
 }
@@ -634,10 +717,22 @@ onBeforeUnmount(() => {
 }
 
 .point-thumb {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
   border: 1px solid var(--admin-border);
+}
+
+:deep(.point-table-wrap .el-empty) {
+  padding: 0;
+}
+
+:deep(.point-table-wrap .el-empty__description) {
+  margin-top: 4px;
+}
+
+:deep(.point-table-wrap .el-empty__description p) {
+  font-size: 12px;
 }
 
 .dialog-image-preview {

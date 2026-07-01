@@ -14,7 +14,7 @@ LOG_DIR = BASE_DIR / "logs"
 PID_FILE = LOG_DIR / "server.pid"
 SERVER_LOG_FILE = LOG_DIR / "server.log"
 HOST = "0.0.0.0"
-PORT = 8000
+PORT = 6567
 
 
 def is_process_running(pid: int) -> bool:

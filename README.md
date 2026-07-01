@@ -39,7 +39,7 @@
 ```bash
 cd backend
 # 使用 uv 管理依赖并启动
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 6567
 ```
 
 ### 前端启动（待前端项目创建后）

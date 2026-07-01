@@ -62,6 +62,8 @@ const selectAttraction = (attraction) => {
   console.log('定位到景点:', attraction)
 }
 
+const getAttractionImage = (attraction) => attraction?.image_url || ''
+
 onMounted(() => {
   fetchRouteDetail()
 })
@@ -161,9 +163,11 @@ onMounted(() => {
                 <div class="attraction-content">
                   <div class="attraction-image">
                     <img
-                      :src="`https://picsum.photos/seed/${routeDetail.id}-${attraction.id}/120/100`"
+                      v-if="getAttractionImage(attraction)"
+                      :src="getAttractionImage(attraction)"
                       :alt="attraction.name"
                     />
+                    <div v-else class="attraction-image-empty">暂无图片</div>
                     <div class="order-badge" :style="{ background: getAttractionColor(index) }">
                       {{ attraction.order }}
                     </div>
@@ -242,9 +246,11 @@ onMounted(() => {
           <div class="attraction-content">
             <div class="attraction-image">
               <img
-                :src="`https://picsum.photos/seed/${routeDetail.id}-${attraction.id}/120/100`"
+                v-if="getAttractionImage(attraction)"
+                :src="getAttractionImage(attraction)"
                 :alt="attraction.name"
               />
+              <div v-else class="attraction-image-empty">暂无图片</div>
               <div class="order-badge" :style="{ background: getAttractionColor(index) }">
                 {{ attraction.order }}
               </div>
@@ -510,6 +516,16 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.attraction-image-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 
 .order-badge {
