@@ -1,0 +1,42 @@
+.claude/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+admin/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+
+# Env
+.env
+.env.local
+backend/.env
+
+# Build outputs
+frontend/dist/
+admin/dist/
+backend/static/
+backend/admin_static/
+
+# Runtime data
+backend/logs/
+*.log
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/app.db
+backend/travel_routes.db
+backend/uploads/
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
